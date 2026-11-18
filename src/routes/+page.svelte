@@ -27,7 +27,7 @@
 	<title>Dagens lunch · Nära Lunch</title>
 	<meta
 		name="description"
-		content="Se dagens lunch hos Björkmans Skafferi i Gullbergsvass, Göteborg."
+		content="Se dagens lunch hos utvalda restauranger i Göteborg."
 	/>
 </svelte:head>
 
@@ -86,7 +86,7 @@
 			<div class="section-heading">
 				<div>
 					<p class="eyebrow section-eyebrow">DAGENS UTVALDA</p>
-					<h2 id="results-heading">Lunch i närheten<span class="count">01</span></h2>
+					<h2 id="results-heading">Lunch i närheten<span class="count">{String(data.restaurants.length).padStart(2, '0')}</span></h2>
 				</div>
 				<button class="refresh-button" onclick={refreshMenu} disabled={isRefreshing}>
 					<svg class:spinning={isRefreshing} viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -96,25 +96,28 @@
 				</button>
 			</div>
 
+			{#each data.restaurants as restaurant}
 			<article class="restaurant-card">
 				<div class="restaurant-top">
 					<div class="restaurant-identity">
-						<div class="restaurant-monogram" aria-hidden="true">B<span>.</span></div>
+						<div class="restaurant-monogram" aria-hidden="true">{restaurant.monogram}</div>
 						<div>
-							<p class="restaurant-type">LUNCHRESTAURANG <span>·</span> GULLBERGSVASS</p>
-							<h3>Björkmans Skafferi</h3>
+							<p class="restaurant-type">LUNCHRESTAURANG <span>·</span> {restaurant.area}</p>
+							<h3>{restaurant.name}</h3>
 							<p class="restaurant-address">
 								<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
 									<path d="M13 6.7c0 3.5-5 7.3-5 7.3S3 10.2 3 6.7a5 5 0 1 1 10 0Z" />
 									<circle cx="8" cy="6.5" r="1.6" />
 								</svg>
-								Kilsgatan 4, Göteborg
+								{restaurant.address}
 							</p>
 						</div>
 					</div>
 					<div class="restaurant-meta">
-						<div class="price">135 <span>kr</span></div>
-						<p>lunch inkl. sallad, bröd & kaffe</p>
+						{#if restaurant.price}
+							<div class="price">{restaurant.price.replace(' kr', '')} <span>kr</span></div>
+						{/if}
+						<p>{restaurant.description}</p>
 					</div>
 				</div>
 
@@ -122,20 +125,20 @@
 					<div class="menu-title">
 						<span class="menu-indicator"></span>
 						<strong>Dagens lunch</strong>
-						<span class="menu-day">{data.menu.weekday}</span>
+						<span class="menu-day">{restaurant.menu.weekday}</span>
 					</div>
 					<span class="serving-hours">
 						<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
 							<circle cx="8" cy="8" r="6" />
 							<path d="M8 4.5V8l2.2 1.4" />
 						</svg>
-						11.00–13.30
+						{restaurant.hours}
 					</span>
 				</div>
 
-				{#if data.menu.status === 'available'}
+				{#if restaurant.menu.status === 'available'}
 					<div class="menu-list">
-						{#each data.menu.items as item, index}
+						{#each restaurant.menu.items as item, index}
 							<div class="dish">
 								<span class="dish-number">{String(index + 1).padStart(2, '0')}</span>
 								<div class="dish-copy">
@@ -145,12 +148,12 @@
 							</div>
 						{/each}
 					</div>
-				{:else if data.menu.status === 'closed'}
+				{:else if restaurant.menu.status === 'closed'}
 					<div class="menu-message">
 						<span class="message-icon">☼</span>
 						<div>
 							<h4>Ingen lunchservering idag</h4>
-							<p>Björkmans Skafferi serverar lunch måndag till fredag.</p>
+							<p>{restaurant.name} serverar lunch måndag till fredag.</p>
 						</div>
 					</div>
 				{:else}
@@ -158,13 +161,13 @@
 						<span class="message-icon">!</span>
 						<div>
 							<h4>Menyn är inte tillgänglig</h4>
-							<p>{data.menu.message}</p>
+							<p>{restaurant.menu.message}</p>
 						</div>
 					</div>
 				{/if}
 
 				<footer class="card-footer">
-					<a href="https://www.bjorkmansskafferi.se/" target="_blank" rel="noreferrer">
+					<a href={restaurant.url} target="_blank" rel="noreferrer">
 						Se originalmenyn
 						<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
 							<path d="M5 11 11 5M5.5 5H11v5.5" />
@@ -172,21 +175,22 @@
 					</a>
 					<span class="updated">
 						<span class="status-dot"></span>
-						{#if data.menu.status === 'available'}
-							Hämtad {formatTime(data.menu.fetchedAt)}
+						{#if restaurant.menu.status === 'available'}
+							Hämtad {formatTime(restaurant.menu.fetchedAt)}
 						{:else}
 							Officiell källa
 						{/if}
 					</span>
 				</footer>
 			</article>
+			{/each}
 		</section>
 
 		<p class="source-note">
 			Dagens rätter hämtas från
-			<a href="https://www.bjorkmansskafferi.se/" target="_blank" rel="noreferrer">
-				Björkmans Skafferi
-			</a>.
+			{#each data.restaurants as restaurant, index}
+				{#if index > 0}, {/if}<a href={restaurant.url} target="_blank" rel="noreferrer">{restaurant.name}</a>
+			{/each}.
 			Läs fulla beskrivningar där. Priser och rätter kan ändras.
 		</p>
 	</main>
@@ -613,10 +617,6 @@
 		font-style: italic;
 	}
 
-	.restaurant-monogram span {
-		color: #ba7b4e;
-	}
-
 	.restaurant-type {
 		margin: 0 0 4px;
 		color: #8d958d;
@@ -769,6 +769,7 @@
 		font-size: 11px;
 		font-weight: 700;
 		letter-spacing: 0.35px;
+		text-transform: uppercase;
 	}
 
 	.dish-arrow {

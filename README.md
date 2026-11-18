@@ -1,6 +1,6 @@
 # Nära Lunch
 
-A small SvelteKit prototype that shows today's lunch menu at Björkmans Skafferi in Gullbergsvass, Göteborg. The menu is fetched from the restaurant's public website with Playwright whenever the page is loaded or refreshed; no menu cache is used.
+A small SvelteKit prototype that shows today's lunch menus from Björkmans Skafferi, Monopolet, Pagoden, Magasin 5, Indya Kilsgatan, Carotte Läppstiftet, and Poppels Citybryggeri in Göteborg. The menus are fetched from the restaurants' public websites with Playwright whenever the page is loaded or refreshed; no menu cache is used.
 
 The page displays dish names and links to the official site for full descriptions.
 
